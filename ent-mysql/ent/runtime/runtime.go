@@ -2,7 +2,84 @@
 
 package runtime
 
-// The schema-stitching logic is generated in http/ent/runtime.go
+import (
+	"ent-mysql/ent/book"
+	"ent-mysql/ent/card"
+	"ent-mysql/ent/schema"
+	"ent-mysql/ent/user"
+	"ent-mysql/enum"
+	"time"
+
+	"github.com/google/uuid"
+)
+
+// The init function reads all schema descriptors with runtime code
+// (default values, validators, hooks and policies) and stitches it
+// to their package variables.
+func init() {
+	bookFields := schema.Book{}.Fields()
+	_ = bookFields
+	// bookDescTitle is the schema descriptor for title field.
+	bookDescTitle := bookFields[0].Descriptor()
+	// book.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	book.TitleValidator = bookDescTitle.Validators[0].(func(string) error)
+	// bookDescAuthor is the schema descriptor for author field.
+	bookDescAuthor := bookFields[1].Descriptor()
+	// book.AuthorValidator is a validator for the "author" field. It is called by the builders before save.
+	book.AuthorValidator = bookDescAuthor.Validators[0].(func(string) error)
+	cardMixin := schema.Card{}.Mixin()
+	cardMixinFields0 := cardMixin[0].Fields()
+	_ = cardMixinFields0
+	cardFields := schema.Card{}.Fields()
+	_ = cardFields
+	// cardDescCreatedAt is the schema descriptor for created_at field.
+	cardDescCreatedAt := cardMixinFields0[0].Descriptor()
+	// card.DefaultCreatedAt holds the default value on creation for the created_at field.
+	card.DefaultCreatedAt = cardDescCreatedAt.Default.(func() time.Time)
+	// cardDescUpdatedAt is the schema descriptor for updated_at field.
+	cardDescUpdatedAt := cardMixinFields0[1].Descriptor()
+	// card.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	card.DefaultUpdatedAt = cardDescUpdatedAt.Default.(func() time.Time)
+	// card.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	card.UpdateDefaultUpdatedAt = cardDescUpdatedAt.UpdateDefault.(func() time.Time)
+	userMixin := schema.User{}.Mixin()
+	userMixinHooks1 := userMixin[1].Hooks()
+	user.Hooks[0] = userMixinHooks1[0]
+	userMixinInters1 := userMixin[1].Interceptors()
+	user.Interceptors[0] = userMixinInters1[0]
+	userMixinFields0 := userMixin[0].Fields()
+	_ = userMixinFields0
+	userFields := schema.User{}.Fields()
+	_ = userFields
+	// userDescCreatedAt is the schema descriptor for created_at field.
+	userDescCreatedAt := userMixinFields0[0].Descriptor()
+	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
+	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
+	// userDescUpdatedAt is the schema descriptor for updated_at field.
+	userDescUpdatedAt := userMixinFields0[1].Descriptor()
+	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
+	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	user.UpdateDefaultUpdatedAt = userDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// userDescAge is the schema descriptor for age field.
+	userDescAge := userFields[0].Descriptor()
+	// user.AgeValidator is a validator for the "age" field. It is called by the builders before save.
+	user.AgeValidator = userDescAge.Validators[0].(func(int) error)
+	// userDescActive is the schema descriptor for active field.
+	userDescActive := userFields[2].Descriptor()
+	// user.DefaultActive holds the default value on creation for the active field.
+	user.DefaultActive = userDescActive.Default.(bool)
+	// userDescState is the schema descriptor for state field.
+	userDescState := userFields[7].Descriptor()
+	// user.DefaultState holds the default value on creation for the state field.
+	user.DefaultState = enum.UserState(userDescState.Default.(int))
+	// user.StateValidator is a validator for the "state" field. It is called by the builders before save.
+	user.StateValidator = userDescState.Validators[0].(func(int) error)
+	// userDescUUID is the schema descriptor for uuid field.
+	userDescUUID := userFields[8].Descriptor()
+	// user.DefaultUUID holds the default value on creation for the uuid field.
+	user.DefaultUUID = userDescUUID.Default.(func() uuid.UUID)
+}
 
 const (
 	Version = "v0.12.3"                                         // Version of ent codegen.

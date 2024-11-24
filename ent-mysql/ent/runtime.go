@@ -2,23 +2,4 @@
 
 package ent
 
-import (
-	"ent-mysql/ent/book"
-	"ent-mysql/ent/schema"
-)
-
-// The init function reads all schema descriptors with runtime code
-// (default values, validators, hooks and policies) and stitches it
-// to their package variables.
-func init() {
-	bookFields := schema.Book{}.Fields()
-	_ = bookFields
-	// bookDescTitle is the schema descriptor for title field.
-	bookDescTitle := bookFields[0].Descriptor()
-	// book.TitleValidator is a validator for the "title" field. It is called by the builders before save.
-	book.TitleValidator = bookDescTitle.Validators[0].(func(string) error)
-	// bookDescAuthor is the schema descriptor for author field.
-	bookDescAuthor := bookFields[1].Descriptor()
-	// book.AuthorValidator is a validator for the "author" field. It is called by the builders before save.
-	book.AuthorValidator = bookDescAuthor.Validators[0].(func(string) error)
-}
+// The schema-stitching logic is generated in ent-mysql/ent/runtime/runtime.go

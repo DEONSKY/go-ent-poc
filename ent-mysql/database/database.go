@@ -1,22 +1,27 @@
 package database
 
 import (
+	"database/sql"
 	"log"
-	"os"
 
 	"ent-mysql/ent"
+	_ "ent-mysql/ent/runtime"
+
+	"entgo.io/ent/dialect"
+	entsql "entgo.io/ent/dialect/sql"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 var DBConn *ent.Client
 
+// Open new connection
 func ConnectDb() {
-	// refer https://github.com/go-sql-driver/mysql#dsn-data-source-name for details
-	dsn := "user:password@tcp(localhost:3306)/dbName?charset=utf8mb4&parseTime=True&loc=Local"
-	client, err := ent.Open("mysql", dsn)
+	db, err := sql.Open("pgx", "postgresql://myuser:mypassword@127.0.0.1/mydatabase")
 	if err != nil {
-		log.Fatal("Failed to connect to database \n", err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
-	log.Println("Connect")
-	DBConn = client
+
+	// Create an ent.Driver from `db`.
+	drv := entsql.OpenDB(dialect.Postgres, db)
+	DBConn = ent.NewClient(ent.Driver(drv))
 }
