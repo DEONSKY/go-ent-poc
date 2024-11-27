@@ -7,50 +7,51 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.Card {
+func ID(id uuid.UUID) predicate.Card {
 	return predicate.Card(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Card {
+func IDEQ(id uuid.UUID) predicate.Card {
 	return predicate.Card(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Card {
+func IDNEQ(id uuid.UUID) predicate.Card {
 	return predicate.Card(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Card {
+func IDIn(ids ...uuid.UUID) predicate.Card {
 	return predicate.Card(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Card {
+func IDNotIn(ids ...uuid.UUID) predicate.Card {
 	return predicate.Card(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Card {
+func IDGT(id uuid.UUID) predicate.Card {
 	return predicate.Card(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Card {
+func IDGTE(id uuid.UUID) predicate.Card {
 	return predicate.Card(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Card {
+func IDLT(id uuid.UUID) predicate.Card {
 	return predicate.Card(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Card {
+func IDLTE(id uuid.UUID) predicate.Card {
 	return predicate.Card(sql.FieldLTE(FieldID, id))
 }
 
@@ -62,6 +63,11 @@ func CreatedAt(v time.Time) predicate.Card {
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.Card {
 	return predicate.Card(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// DeleteTime applies equality check predicate on the "delete_time" field. It's identical to DeleteTimeEQ.
+func DeleteTime(v time.Time) predicate.Card {
+	return predicate.Card(sql.FieldEQ(FieldDeleteTime, v))
 }
 
 // CardNo applies equality check predicate on the "card_no" field. It's identical to CardNoEQ.
@@ -147,6 +153,56 @@ func UpdatedAtLT(v time.Time) predicate.Card {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.Card {
 	return predicate.Card(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// DeleteTimeEQ applies the EQ predicate on the "delete_time" field.
+func DeleteTimeEQ(v time.Time) predicate.Card {
+	return predicate.Card(sql.FieldEQ(FieldDeleteTime, v))
+}
+
+// DeleteTimeNEQ applies the NEQ predicate on the "delete_time" field.
+func DeleteTimeNEQ(v time.Time) predicate.Card {
+	return predicate.Card(sql.FieldNEQ(FieldDeleteTime, v))
+}
+
+// DeleteTimeIn applies the In predicate on the "delete_time" field.
+func DeleteTimeIn(vs ...time.Time) predicate.Card {
+	return predicate.Card(sql.FieldIn(FieldDeleteTime, vs...))
+}
+
+// DeleteTimeNotIn applies the NotIn predicate on the "delete_time" field.
+func DeleteTimeNotIn(vs ...time.Time) predicate.Card {
+	return predicate.Card(sql.FieldNotIn(FieldDeleteTime, vs...))
+}
+
+// DeleteTimeGT applies the GT predicate on the "delete_time" field.
+func DeleteTimeGT(v time.Time) predicate.Card {
+	return predicate.Card(sql.FieldGT(FieldDeleteTime, v))
+}
+
+// DeleteTimeGTE applies the GTE predicate on the "delete_time" field.
+func DeleteTimeGTE(v time.Time) predicate.Card {
+	return predicate.Card(sql.FieldGTE(FieldDeleteTime, v))
+}
+
+// DeleteTimeLT applies the LT predicate on the "delete_time" field.
+func DeleteTimeLT(v time.Time) predicate.Card {
+	return predicate.Card(sql.FieldLT(FieldDeleteTime, v))
+}
+
+// DeleteTimeLTE applies the LTE predicate on the "delete_time" field.
+func DeleteTimeLTE(v time.Time) predicate.Card {
+	return predicate.Card(sql.FieldLTE(FieldDeleteTime, v))
+}
+
+// DeleteTimeIsNil applies the IsNil predicate on the "delete_time" field.
+func DeleteTimeIsNil() predicate.Card {
+	return predicate.Card(sql.FieldIsNull(FieldDeleteTime))
+}
+
+// DeleteTimeNotNil applies the NotNil predicate on the "delete_time" field.
+func DeleteTimeNotNil() predicate.Card {
+	return predicate.Card(sql.FieldNotNull(FieldDeleteTime))
 }
 
 // CardNoEQ applies the EQ predicate on the "card_no" field.

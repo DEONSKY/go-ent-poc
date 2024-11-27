@@ -17,17 +17,42 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	bookMixin := schema.Book{}.Mixin()
+	bookMixinHooks1 := bookMixin[1].Hooks()
+	book.Hooks[0] = bookMixinHooks1[0]
+	bookMixinInters1 := bookMixin[1].Interceptors()
+	book.Interceptors[0] = bookMixinInters1[0]
+	bookMixinFields0 := bookMixin[0].Fields()
+	_ = bookMixinFields0
 	bookFields := schema.Book{}.Fields()
 	_ = bookFields
+	// bookDescCreatedAt is the schema descriptor for created_at field.
+	bookDescCreatedAt := bookMixinFields0[0].Descriptor()
+	// book.DefaultCreatedAt holds the default value on creation for the created_at field.
+	book.DefaultCreatedAt = bookDescCreatedAt.Default.(func() time.Time)
+	// bookDescUpdatedAt is the schema descriptor for updated_at field.
+	bookDescUpdatedAt := bookMixinFields0[1].Descriptor()
+	// book.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	book.DefaultUpdatedAt = bookDescUpdatedAt.Default.(func() time.Time)
+	// book.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	book.UpdateDefaultUpdatedAt = bookDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// bookDescTitle is the schema descriptor for title field.
-	bookDescTitle := bookFields[0].Descriptor()
+	bookDescTitle := bookFields[1].Descriptor()
 	// book.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	book.TitleValidator = bookDescTitle.Validators[0].(func(string) error)
 	// bookDescAuthor is the schema descriptor for author field.
-	bookDescAuthor := bookFields[1].Descriptor()
+	bookDescAuthor := bookFields[2].Descriptor()
 	// book.AuthorValidator is a validator for the "author" field. It is called by the builders before save.
 	book.AuthorValidator = bookDescAuthor.Validators[0].(func(string) error)
+	// bookDescID is the schema descriptor for id field.
+	bookDescID := bookFields[0].Descriptor()
+	// book.DefaultID holds the default value on creation for the id field.
+	book.DefaultID = bookDescID.Default.(func() uuid.UUID)
 	cardMixin := schema.Card{}.Mixin()
+	cardMixinHooks1 := cardMixin[1].Hooks()
+	card.Hooks[0] = cardMixinHooks1[0]
+	cardMixinInters1 := cardMixin[1].Interceptors()
+	card.Interceptors[0] = cardMixinInters1[0]
 	cardMixinFields0 := cardMixin[0].Fields()
 	_ = cardMixinFields0
 	cardFields := schema.Card{}.Fields()
@@ -42,6 +67,10 @@ func init() {
 	card.DefaultUpdatedAt = cardDescUpdatedAt.Default.(func() time.Time)
 	// card.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	card.UpdateDefaultUpdatedAt = cardDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// cardDescID is the schema descriptor for id field.
+	cardDescID := cardFields[0].Descriptor()
+	// card.DefaultID holds the default value on creation for the id field.
+	card.DefaultID = cardDescID.Default.(func() uuid.UUID)
 	userMixin := schema.User{}.Mixin()
 	userMixinHooks1 := userMixin[1].Hooks()
 	user.Hooks[0] = userMixinHooks1[0]
@@ -62,23 +91,27 @@ func init() {
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	user.UpdateDefaultUpdatedAt = userDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// userDescAge is the schema descriptor for age field.
-	userDescAge := userFields[0].Descriptor()
+	userDescAge := userFields[1].Descriptor()
 	// user.AgeValidator is a validator for the "age" field. It is called by the builders before save.
 	user.AgeValidator = userDescAge.Validators[0].(func(int) error)
 	// userDescActive is the schema descriptor for active field.
-	userDescActive := userFields[2].Descriptor()
+	userDescActive := userFields[3].Descriptor()
 	// user.DefaultActive holds the default value on creation for the active field.
 	user.DefaultActive = userDescActive.Default.(bool)
 	// userDescState is the schema descriptor for state field.
-	userDescState := userFields[7].Descriptor()
+	userDescState := userFields[8].Descriptor()
 	// user.DefaultState holds the default value on creation for the state field.
 	user.DefaultState = enum.UserState(userDescState.Default.(int))
 	// user.StateValidator is a validator for the "state" field. It is called by the builders before save.
 	user.StateValidator = userDescState.Validators[0].(func(int) error)
 	// userDescUUID is the schema descriptor for uuid field.
-	userDescUUID := userFields[8].Descriptor()
+	userDescUUID := userFields[9].Descriptor()
 	// user.DefaultUUID holds the default value on creation for the uuid field.
 	user.DefaultUUID = userDescUUID.Default.(func() uuid.UUID)
+	// userDescID is the schema descriptor for id field.
+	userDescID := userFields[0].Descriptor()
+	// user.DefaultID holds the default value on creation for the id field.
+	user.DefaultID = userDescID.Default.(func() uuid.UUID)
 }
 
 const (

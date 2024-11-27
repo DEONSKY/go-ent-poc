@@ -39,7 +39,10 @@ type BookMutation struct {
 	config
 	op            Op
 	typ           string
-	id            *int
+	id            *uuid.UUID
+	created_at    *time.Time
+	updated_at    *time.Time
+	delete_time   *time.Time
 	title         *string
 	author        *string
 	clearedFields map[string]struct{}
@@ -68,7 +71,7 @@ func newBookMutation(c config, op Op, opts ...bookOption) *BookMutation {
 }
 
 // withBookID sets the ID field of the mutation.
-func withBookID(id int) bookOption {
+func withBookID(id uuid.UUID) bookOption {
 	return func(m *BookMutation) {
 		var (
 			err   error
@@ -118,9 +121,15 @@ func (m BookMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Book entities.
+func (m *BookMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *BookMutation) ID() (id int, exists bool) {
+func (m *BookMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -131,12 +140,12 @@ func (m *BookMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *BookMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *BookMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []int{id}, nil
+			return []uuid.UUID{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -144,6 +153,127 @@ func (m *BookMutation) IDs(ctx context.Context) ([]int, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *BookMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *BookMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Book entity.
+// If the Book object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *BookMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *BookMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *BookMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Book entity.
+// If the Book object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *BookMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (m *BookMutation) SetDeleteTime(t time.Time) {
+	m.delete_time = &t
+}
+
+// DeleteTime returns the value of the "delete_time" field in the mutation.
+func (m *BookMutation) DeleteTime() (r time.Time, exists bool) {
+	v := m.delete_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteTime returns the old "delete_time" field's value of the Book entity.
+// If the Book object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookMutation) OldDeleteTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteTime: %w", err)
+	}
+	return oldValue.DeleteTime, nil
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (m *BookMutation) ClearDeleteTime() {
+	m.delete_time = nil
+	m.clearedFields[book.FieldDeleteTime] = struct{}{}
+}
+
+// DeleteTimeCleared returns if the "delete_time" field was cleared in this mutation.
+func (m *BookMutation) DeleteTimeCleared() bool {
+	_, ok := m.clearedFields[book.FieldDeleteTime]
+	return ok
+}
+
+// ResetDeleteTime resets all changes to the "delete_time" field.
+func (m *BookMutation) ResetDeleteTime() {
+	m.delete_time = nil
+	delete(m.clearedFields, book.FieldDeleteTime)
 }
 
 // SetTitle sets the "title" field.
@@ -252,7 +382,16 @@ func (m *BookMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *BookMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 5)
+	if m.created_at != nil {
+		fields = append(fields, book.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, book.FieldUpdatedAt)
+	}
+	if m.delete_time != nil {
+		fields = append(fields, book.FieldDeleteTime)
+	}
 	if m.title != nil {
 		fields = append(fields, book.FieldTitle)
 	}
@@ -267,6 +406,12 @@ func (m *BookMutation) Fields() []string {
 // schema.
 func (m *BookMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case book.FieldCreatedAt:
+		return m.CreatedAt()
+	case book.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case book.FieldDeleteTime:
+		return m.DeleteTime()
 	case book.FieldTitle:
 		return m.Title()
 	case book.FieldAuthor:
@@ -280,6 +425,12 @@ func (m *BookMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *BookMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case book.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case book.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case book.FieldDeleteTime:
+		return m.OldDeleteTime(ctx)
 	case book.FieldTitle:
 		return m.OldTitle(ctx)
 	case book.FieldAuthor:
@@ -293,6 +444,27 @@ func (m *BookMutation) OldField(ctx context.Context, name string) (ent.Value, er
 // type.
 func (m *BookMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case book.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case book.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case book.FieldDeleteTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteTime(v)
+		return nil
 	case book.FieldTitle:
 		v, ok := value.(string)
 		if !ok {
@@ -336,7 +508,11 @@ func (m *BookMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *BookMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(book.FieldDeleteTime) {
+		fields = append(fields, book.FieldDeleteTime)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -349,6 +525,11 @@ func (m *BookMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *BookMutation) ClearField(name string) error {
+	switch name {
+	case book.FieldDeleteTime:
+		m.ClearDeleteTime()
+		return nil
+	}
 	return fmt.Errorf("unknown Book nullable field %s", name)
 }
 
@@ -356,6 +537,15 @@ func (m *BookMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *BookMutation) ResetField(name string) error {
 	switch name {
+	case book.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case book.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case book.FieldDeleteTime:
+		m.ResetDeleteTime()
+		return nil
 	case book.FieldTitle:
 		m.ResetTitle()
 		return nil
@@ -419,9 +609,10 @@ type CardMutation struct {
 	config
 	op            Op
 	typ           string
-	id            *int
+	id            *uuid.UUID
 	created_at    *time.Time
 	updated_at    *time.Time
+	delete_time   *time.Time
 	card_no       *string
 	clearedFields map[string]struct{}
 	done          bool
@@ -449,7 +640,7 @@ func newCardMutation(c config, op Op, opts ...cardOption) *CardMutation {
 }
 
 // withCardID sets the ID field of the mutation.
-func withCardID(id int) cardOption {
+func withCardID(id uuid.UUID) cardOption {
 	return func(m *CardMutation) {
 		var (
 			err   error
@@ -499,9 +690,15 @@ func (m CardMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Card entities.
+func (m *CardMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *CardMutation) ID() (id int, exists bool) {
+func (m *CardMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -512,12 +709,12 @@ func (m *CardMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *CardMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *CardMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []int{id}, nil
+			return []uuid.UUID{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -599,6 +796,55 @@ func (m *CardMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// SetDeleteTime sets the "delete_time" field.
+func (m *CardMutation) SetDeleteTime(t time.Time) {
+	m.delete_time = &t
+}
+
+// DeleteTime returns the value of the "delete_time" field in the mutation.
+func (m *CardMutation) DeleteTime() (r time.Time, exists bool) {
+	v := m.delete_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleteTime returns the old "delete_time" field's value of the Card entity.
+// If the Card object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CardMutation) OldDeleteTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeleteTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeleteTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleteTime: %w", err)
+	}
+	return oldValue.DeleteTime, nil
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (m *CardMutation) ClearDeleteTime() {
+	m.delete_time = nil
+	m.clearedFields[card.FieldDeleteTime] = struct{}{}
+}
+
+// DeleteTimeCleared returns if the "delete_time" field was cleared in this mutation.
+func (m *CardMutation) DeleteTimeCleared() bool {
+	_, ok := m.clearedFields[card.FieldDeleteTime]
+	return ok
+}
+
+// ResetDeleteTime resets all changes to the "delete_time" field.
+func (m *CardMutation) ResetDeleteTime() {
+	m.delete_time = nil
+	delete(m.clearedFields, card.FieldDeleteTime)
+}
+
 // SetCardNo sets the "card_no" field.
 func (m *CardMutation) SetCardNo(s string) {
 	m.card_no = &s
@@ -669,12 +915,15 @@ func (m *CardMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *CardMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.created_at != nil {
 		fields = append(fields, card.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, card.FieldUpdatedAt)
+	}
+	if m.delete_time != nil {
+		fields = append(fields, card.FieldDeleteTime)
 	}
 	if m.card_no != nil {
 		fields = append(fields, card.FieldCardNo)
@@ -691,6 +940,8 @@ func (m *CardMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case card.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case card.FieldDeleteTime:
+		return m.DeleteTime()
 	case card.FieldCardNo:
 		return m.CardNo()
 	}
@@ -706,6 +957,8 @@ func (m *CardMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldCreatedAt(ctx)
 	case card.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case card.FieldDeleteTime:
+		return m.OldDeleteTime(ctx)
 	case card.FieldCardNo:
 		return m.OldCardNo(ctx)
 	}
@@ -730,6 +983,13 @@ func (m *CardMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
+		return nil
+	case card.FieldDeleteTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleteTime(v)
 		return nil
 	case card.FieldCardNo:
 		v, ok := value.(string)
@@ -767,7 +1027,11 @@ func (m *CardMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *CardMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(card.FieldDeleteTime) {
+		fields = append(fields, card.FieldDeleteTime)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -780,6 +1044,11 @@ func (m *CardMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *CardMutation) ClearField(name string) error {
+	switch name {
+	case card.FieldDeleteTime:
+		m.ClearDeleteTime()
+		return nil
+	}
 	return fmt.Errorf("unknown Card nullable field %s", name)
 }
 
@@ -792,6 +1061,9 @@ func (m *CardMutation) ResetField(name string) error {
 		return nil
 	case card.FieldUpdatedAt:
 		m.ResetUpdatedAt()
+		return nil
+	case card.FieldDeleteTime:
+		m.ResetDeleteTime()
 		return nil
 	case card.FieldCardNo:
 		m.ResetCardNo()
@@ -853,7 +1125,7 @@ type UserMutation struct {
 	config
 	op            Op
 	typ           string
-	id            *int
+	id            *uuid.UUID
 	created_at    *time.Time
 	updated_at    *time.Time
 	delete_time   *time.Time
@@ -871,8 +1143,8 @@ type UserMutation struct {
 	addstate      *enum.UserState
 	uuid          *uuid.UUID
 	clearedFields map[string]struct{}
-	card          map[int]struct{}
-	removedcard   map[int]struct{}
+	card          map[uuid.UUID]struct{}
+	removedcard   map[uuid.UUID]struct{}
 	clearedcard   bool
 	done          bool
 	oldValue      func(context.Context) (*User, error)
@@ -899,7 +1171,7 @@ func newUserMutation(c config, op Op, opts ...userOption) *UserMutation {
 }
 
 // withUserID sets the ID field of the mutation.
-func withUserID(id int) userOption {
+func withUserID(id uuid.UUID) userOption {
 	return func(m *UserMutation) {
 		var (
 			err   error
@@ -949,9 +1221,15 @@ func (m UserMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of User entities.
+func (m *UserMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *UserMutation) ID() (id int, exists bool) {
+func (m *UserMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -962,12 +1240,12 @@ func (m *UserMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *UserMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *UserMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []int{id}, nil
+			return []uuid.UUID{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -1539,9 +1817,9 @@ func (m *UserMutation) ResetUUID() {
 }
 
 // AddCardIDs adds the "card" edge to the Card entity by ids.
-func (m *UserMutation) AddCardIDs(ids ...int) {
+func (m *UserMutation) AddCardIDs(ids ...uuid.UUID) {
 	if m.card == nil {
-		m.card = make(map[int]struct{})
+		m.card = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.card[ids[i]] = struct{}{}
@@ -1559,9 +1837,9 @@ func (m *UserMutation) CardCleared() bool {
 }
 
 // RemoveCardIDs removes the "card" edge to the Card entity by IDs.
-func (m *UserMutation) RemoveCardIDs(ids ...int) {
+func (m *UserMutation) RemoveCardIDs(ids ...uuid.UUID) {
 	if m.removedcard == nil {
-		m.removedcard = make(map[int]struct{})
+		m.removedcard = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		delete(m.card, ids[i])
@@ -1570,7 +1848,7 @@ func (m *UserMutation) RemoveCardIDs(ids ...int) {
 }
 
 // RemovedCard returns the removed IDs of the "card" edge to the Card entity.
-func (m *UserMutation) RemovedCardIDs() (ids []int) {
+func (m *UserMutation) RemovedCardIDs() (ids []uuid.UUID) {
 	for id := range m.removedcard {
 		ids = append(ids, id)
 	}
@@ -1578,7 +1856,7 @@ func (m *UserMutation) RemovedCardIDs() (ids []int) {
 }
 
 // CardIDs returns the "card" edge IDs in the mutation.
-func (m *UserMutation) CardIDs() (ids []int) {
+func (m *UserMutation) CardIDs() (ids []uuid.UUID) {
 	for id := range m.card {
 		ids = append(ids, id)
 	}

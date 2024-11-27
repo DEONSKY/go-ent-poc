@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // CardQuery is the builder for querying Card entities.
@@ -82,8 +83,8 @@ func (cq *CardQuery) FirstX(ctx context.Context) *Card {
 
 // FirstID returns the first Card ID from the query.
 // Returns a *NotFoundError when no Card ID was found.
-func (cq *CardQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (cq *CardQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = cq.Limit(1).IDs(setContextOp(ctx, cq.ctx, "FirstID")); err != nil {
 		return
 	}
@@ -95,7 +96,7 @@ func (cq *CardQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (cq *CardQuery) FirstIDX(ctx context.Context) int {
+func (cq *CardQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := cq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -133,8 +134,8 @@ func (cq *CardQuery) OnlyX(ctx context.Context) *Card {
 // OnlyID is like Only, but returns the only Card ID in the query.
 // Returns a *NotSingularError when more than one Card ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (cq *CardQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (cq *CardQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = cq.Limit(2).IDs(setContextOp(ctx, cq.ctx, "OnlyID")); err != nil {
 		return
 	}
@@ -150,7 +151,7 @@ func (cq *CardQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (cq *CardQuery) OnlyIDX(ctx context.Context) int {
+func (cq *CardQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := cq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -178,7 +179,7 @@ func (cq *CardQuery) AllX(ctx context.Context) []*Card {
 }
 
 // IDs executes the query and returns a list of Card IDs.
-func (cq *CardQuery) IDs(ctx context.Context) (ids []int, err error) {
+func (cq *CardQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if cq.ctx.Unique == nil && cq.path != nil {
 		cq.Unique(true)
 	}
@@ -190,7 +191,7 @@ func (cq *CardQuery) IDs(ctx context.Context) (ids []int, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (cq *CardQuery) IDsX(ctx context.Context) []int {
+func (cq *CardQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := cq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -369,7 +370,7 @@ func (cq *CardQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (cq *CardQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(card.Table, card.Columns, sqlgraph.NewFieldSpec(card.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(card.Table, card.Columns, sqlgraph.NewFieldSpec(card.FieldID, field.TypeUUID))
 	_spec.From = cq.sql
 	if unique := cq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

@@ -21,6 +21,7 @@ type User struct {
 
 func (User) Fields() []ent.Field {
 	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.Int("age").
 			Positive(),
 		field.Float("rank").

@@ -18,6 +18,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 )
 
 // Client is the client that holds all ent builders.
@@ -255,7 +256,7 @@ func (c *BookClient) UpdateOne(b *Book) *BookUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *BookClient) UpdateOneID(id int) *BookUpdateOne {
+func (c *BookClient) UpdateOneID(id uuid.UUID) *BookUpdateOne {
 	mutation := newBookMutation(c.config, OpUpdateOne, withBookID(id))
 	return &BookUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -272,7 +273,7 @@ func (c *BookClient) DeleteOne(b *Book) *BookDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *BookClient) DeleteOneID(id int) *BookDeleteOne {
+func (c *BookClient) DeleteOneID(id uuid.UUID) *BookDeleteOne {
 	builder := c.Delete().Where(book.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -289,12 +290,12 @@ func (c *BookClient) Query() *BookQuery {
 }
 
 // Get returns a Book entity by its id.
-func (c *BookClient) Get(ctx context.Context, id int) (*Book, error) {
+func (c *BookClient) Get(ctx context.Context, id uuid.UUID) (*Book, error) {
 	return c.Query().Where(book.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *BookClient) GetX(ctx context.Context, id int) *Book {
+func (c *BookClient) GetX(ctx context.Context, id uuid.UUID) *Book {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -304,12 +305,14 @@ func (c *BookClient) GetX(ctx context.Context, id int) *Book {
 
 // Hooks returns the client hooks.
 func (c *BookClient) Hooks() []Hook {
-	return c.hooks.Book
+	hooks := c.hooks.Book
+	return append(hooks[:len(hooks):len(hooks)], book.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
 func (c *BookClient) Interceptors() []Interceptor {
-	return c.inters.Book
+	inters := c.inters.Book
+	return append(inters[:len(inters):len(inters)], book.Interceptors[:]...)
 }
 
 func (c *BookClient) mutate(ctx context.Context, m *BookMutation) (Value, error) {
@@ -373,7 +376,7 @@ func (c *CardClient) UpdateOne(ca *Card) *CardUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *CardClient) UpdateOneID(id int) *CardUpdateOne {
+func (c *CardClient) UpdateOneID(id uuid.UUID) *CardUpdateOne {
 	mutation := newCardMutation(c.config, OpUpdateOne, withCardID(id))
 	return &CardUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -390,7 +393,7 @@ func (c *CardClient) DeleteOne(ca *Card) *CardDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *CardClient) DeleteOneID(id int) *CardDeleteOne {
+func (c *CardClient) DeleteOneID(id uuid.UUID) *CardDeleteOne {
 	builder := c.Delete().Where(card.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -407,12 +410,12 @@ func (c *CardClient) Query() *CardQuery {
 }
 
 // Get returns a Card entity by its id.
-func (c *CardClient) Get(ctx context.Context, id int) (*Card, error) {
+func (c *CardClient) Get(ctx context.Context, id uuid.UUID) (*Card, error) {
 	return c.Query().Where(card.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *CardClient) GetX(ctx context.Context, id int) *Card {
+func (c *CardClient) GetX(ctx context.Context, id uuid.UUID) *Card {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -422,12 +425,14 @@ func (c *CardClient) GetX(ctx context.Context, id int) *Card {
 
 // Hooks returns the client hooks.
 func (c *CardClient) Hooks() []Hook {
-	return c.hooks.Card
+	hooks := c.hooks.Card
+	return append(hooks[:len(hooks):len(hooks)], card.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
 func (c *CardClient) Interceptors() []Interceptor {
-	return c.inters.Card
+	inters := c.inters.Card
+	return append(inters[:len(inters):len(inters)], card.Interceptors[:]...)
 }
 
 func (c *CardClient) mutate(ctx context.Context, m *CardMutation) (Value, error) {
@@ -491,7 +496,7 @@ func (c *UserClient) UpdateOne(u *User) *UserUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *UserClient) UpdateOneID(id int) *UserUpdateOne {
+func (c *UserClient) UpdateOneID(id uuid.UUID) *UserUpdateOne {
 	mutation := newUserMutation(c.config, OpUpdateOne, withUserID(id))
 	return &UserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -508,7 +513,7 @@ func (c *UserClient) DeleteOne(u *User) *UserDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *UserClient) DeleteOneID(id int) *UserDeleteOne {
+func (c *UserClient) DeleteOneID(id uuid.UUID) *UserDeleteOne {
 	builder := c.Delete().Where(user.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -525,12 +530,12 @@ func (c *UserClient) Query() *UserQuery {
 }
 
 // Get returns a User entity by its id.
-func (c *UserClient) Get(ctx context.Context, id int) (*User, error) {
+func (c *UserClient) Get(ctx context.Context, id uuid.UUID) (*User, error) {
 	return c.Query().Where(user.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *UserClient) GetX(ctx context.Context, id int) *User {
+func (c *UserClient) GetX(ctx context.Context, id uuid.UUID) *User {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)

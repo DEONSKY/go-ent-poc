@@ -3,6 +3,10 @@ package schema
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
+
+	"ent-mysql/ent/schema/schematype"
+
+	"github.com/google/uuid"
 )
 
 type Card struct {
@@ -11,6 +15,7 @@ type Card struct {
 
 func (Card) Fields() []ent.Field {
 	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("card_no"),
 	}
 }
@@ -18,6 +23,7 @@ func (Card) Fields() []ent.Field {
 func (Card) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		TimeMixin{},
+		schematype.SoftDeleteMixin{},
 	}
 }
 

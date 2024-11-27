@@ -191,14 +191,14 @@ func (uu *UserUpdate) SetNillableUUID(u *uuid.UUID) *UserUpdate {
 }
 
 // AddCardIDs adds the "card" edge to the Card entity by IDs.
-func (uu *UserUpdate) AddCardIDs(ids ...int) *UserUpdate {
+func (uu *UserUpdate) AddCardIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.AddCardIDs(ids...)
 	return uu
 }
 
 // AddCard adds the "card" edges to the Card entity.
 func (uu *UserUpdate) AddCard(c ...*Card) *UserUpdate {
-	ids := make([]int, len(c))
+	ids := make([]uuid.UUID, len(c))
 	for i := range c {
 		ids[i] = c[i].ID
 	}
@@ -217,14 +217,14 @@ func (uu *UserUpdate) ClearCard() *UserUpdate {
 }
 
 // RemoveCardIDs removes the "card" edge to Card entities by IDs.
-func (uu *UserUpdate) RemoveCardIDs(ids ...int) *UserUpdate {
+func (uu *UserUpdate) RemoveCardIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.RemoveCardIDs(ids...)
 	return uu
 }
 
 // RemoveCard removes "card" edges to Card entities.
 func (uu *UserUpdate) RemoveCard(c ...*Card) *UserUpdate {
-	ids := make([]int, len(c))
+	ids := make([]uuid.UUID, len(c))
 	for i := range c {
 		ids[i] = c[i].ID
 	}
@@ -292,7 +292,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if err := uu.check(); err != nil {
 		return n, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(user.Table, user.Columns, sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(user.Table, user.Columns, sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID))
 	if ps := uu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -367,7 +367,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{user.CardColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(card.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(card.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -380,7 +380,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{user.CardColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(card.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(card.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -396,7 +396,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{user.CardColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(card.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(card.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -582,14 +582,14 @@ func (uuo *UserUpdateOne) SetNillableUUID(u *uuid.UUID) *UserUpdateOne {
 }
 
 // AddCardIDs adds the "card" edge to the Card entity by IDs.
-func (uuo *UserUpdateOne) AddCardIDs(ids ...int) *UserUpdateOne {
+func (uuo *UserUpdateOne) AddCardIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.AddCardIDs(ids...)
 	return uuo
 }
 
 // AddCard adds the "card" edges to the Card entity.
 func (uuo *UserUpdateOne) AddCard(c ...*Card) *UserUpdateOne {
-	ids := make([]int, len(c))
+	ids := make([]uuid.UUID, len(c))
 	for i := range c {
 		ids[i] = c[i].ID
 	}
@@ -608,14 +608,14 @@ func (uuo *UserUpdateOne) ClearCard() *UserUpdateOne {
 }
 
 // RemoveCardIDs removes the "card" edge to Card entities by IDs.
-func (uuo *UserUpdateOne) RemoveCardIDs(ids ...int) *UserUpdateOne {
+func (uuo *UserUpdateOne) RemoveCardIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.RemoveCardIDs(ids...)
 	return uuo
 }
 
 // RemoveCard removes "card" edges to Card entities.
 func (uuo *UserUpdateOne) RemoveCard(c ...*Card) *UserUpdateOne {
-	ids := make([]int, len(c))
+	ids := make([]uuid.UUID, len(c))
 	for i := range c {
 		ids[i] = c[i].ID
 	}
@@ -696,7 +696,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if err := uuo.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(user.Table, user.Columns, sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(user.Table, user.Columns, sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID))
 	id, ok := uuo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "User.id" for update`)}
@@ -788,7 +788,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Columns: []string{user.CardColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(card.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(card.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -801,7 +801,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Columns: []string{user.CardColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(card.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(card.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -817,7 +817,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Columns: []string{user.CardColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(card.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(card.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -11,6 +11,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // CardCreate is the builder for creating a Card entity.
@@ -48,9 +49,37 @@ func (cc *CardCreate) SetNillableUpdatedAt(t *time.Time) *CardCreate {
 	return cc
 }
 
+// SetDeleteTime sets the "delete_time" field.
+func (cc *CardCreate) SetDeleteTime(t time.Time) *CardCreate {
+	cc.mutation.SetDeleteTime(t)
+	return cc
+}
+
+// SetNillableDeleteTime sets the "delete_time" field if the given value is not nil.
+func (cc *CardCreate) SetNillableDeleteTime(t *time.Time) *CardCreate {
+	if t != nil {
+		cc.SetDeleteTime(*t)
+	}
+	return cc
+}
+
 // SetCardNo sets the "card_no" field.
 func (cc *CardCreate) SetCardNo(s string) *CardCreate {
 	cc.mutation.SetCardNo(s)
+	return cc
+}
+
+// SetID sets the "id" field.
+func (cc *CardCreate) SetID(u uuid.UUID) *CardCreate {
+	cc.mutation.SetID(u)
+	return cc
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (cc *CardCreate) SetNillableID(u *uuid.UUID) *CardCreate {
+	if u != nil {
+		cc.SetID(*u)
+	}
 	return cc
 }
 
@@ -61,7 +90,9 @@ func (cc *CardCreate) Mutation() *CardMutation {
 
 // Save creates the Card in the database.
 func (cc *CardCreate) Save(ctx context.Context) (*Card, error) {
-	cc.defaults()
+	if err := cc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, cc.sqlSave, cc.mutation, cc.hooks)
 }
 
@@ -88,15 +119,29 @@ func (cc *CardCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (cc *CardCreate) defaults() {
+func (cc *CardCreate) defaults() error {
 	if _, ok := cc.mutation.CreatedAt(); !ok {
+		if card.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized card.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := card.DefaultCreatedAt()
 		cc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := cc.mutation.UpdatedAt(); !ok {
+		if card.DefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized card.DefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
 		v := card.DefaultUpdatedAt()
 		cc.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := cc.mutation.ID(); !ok {
+		if card.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized card.DefaultID (forgotten import ent/runtime?)")
+		}
+		v := card.DefaultID()
+		cc.mutation.SetID(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -124,8 +169,13 @@ func (cc *CardCreate) sqlSave(ctx context.Context) (*Card, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	cc.mutation.id = &_node.ID
 	cc.mutation.done = true
 	return _node, nil
@@ -134,8 +184,12 @@ func (cc *CardCreate) sqlSave(ctx context.Context) (*Card, error) {
 func (cc *CardCreate) createSpec() (*Card, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Card{config: cc.config}
-		_spec = sqlgraph.NewCreateSpec(card.Table, sqlgraph.NewFieldSpec(card.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(card.Table, sqlgraph.NewFieldSpec(card.FieldID, field.TypeUUID))
 	)
+	if id, ok := cc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
+	}
 	if value, ok := cc.mutation.CreatedAt(); ok {
 		_spec.SetField(card.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
@@ -143,6 +197,10 @@ func (cc *CardCreate) createSpec() (*Card, *sqlgraph.CreateSpec) {
 	if value, ok := cc.mutation.UpdatedAt(); ok {
 		_spec.SetField(card.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if value, ok := cc.mutation.DeleteTime(); ok {
+		_spec.SetField(card.FieldDeleteTime, field.TypeTime, value)
+		_node.DeleteTime = value
 	}
 	if value, ok := cc.mutation.CardNo(); ok {
 		_spec.SetField(card.FieldCardNo, field.TypeString, value)
@@ -192,10 +250,6 @@ func (ccb *CardCreateBulk) Save(ctx context.Context) ([]*Card, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})

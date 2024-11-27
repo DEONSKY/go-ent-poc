@@ -10,20 +10,23 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 )
 
 // Card is the model entity for the Card schema.
 type Card struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// DeleteTime holds the value of the "delete_time" field.
+	DeleteTime time.Time `json:"delete_time,omitempty"`
 	// CardNo holds the value of the "card_no" field.
 	CardNo       string `json:"card_no,omitempty"`
-	user_card    *int
+	user_card    *uuid.UUID
 	selectValues sql.SelectValues
 }
 
@@ -32,14 +35,14 @@ func (*Card) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case card.FieldID:
-			values[i] = new(sql.NullInt64)
 		case card.FieldCardNo:
 			values[i] = new(sql.NullString)
-		case card.FieldCreatedAt, card.FieldUpdatedAt:
+		case card.FieldCreatedAt, card.FieldUpdatedAt, card.FieldDeleteTime:
 			values[i] = new(sql.NullTime)
+		case card.FieldID:
+			values[i] = new(uuid.UUID)
 		case card.ForeignKeys[0]: // user_card
-			values[i] = new(sql.NullInt64)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -56,11 +59,11 @@ func (c *Card) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case card.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				c.ID = *value
 			}
-			c.ID = int(value.Int64)
 		case card.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -73,6 +76,12 @@ func (c *Card) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				c.UpdatedAt = value.Time
 			}
+		case card.FieldDeleteTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field delete_time", values[i])
+			} else if value.Valid {
+				c.DeleteTime = value.Time
+			}
 		case card.FieldCardNo:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field card_no", values[i])
@@ -80,11 +89,11 @@ func (c *Card) assignValues(columns []string, values []any) error {
 				c.CardNo = value.String
 			}
 		case card.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field user_card", value)
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field user_card", values[i])
 			} else if value.Valid {
-				c.user_card = new(int)
-				*c.user_card = int(value.Int64)
+				c.user_card = new(uuid.UUID)
+				*c.user_card = *value.S.(*uuid.UUID)
 			}
 		default:
 			c.selectValues.Set(columns[i], values[i])
@@ -127,6 +136,9 @@ func (c *Card) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(c.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("delete_time=")
+	builder.WriteString(c.DeleteTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("card_no=")
 	builder.WriteString(c.CardNo)

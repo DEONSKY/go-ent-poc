@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // BookQuery is the builder for querying Book entities.
@@ -81,8 +82,8 @@ func (bq *BookQuery) FirstX(ctx context.Context) *Book {
 
 // FirstID returns the first Book ID from the query.
 // Returns a *NotFoundError when no Book ID was found.
-func (bq *BookQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (bq *BookQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = bq.Limit(1).IDs(setContextOp(ctx, bq.ctx, "FirstID")); err != nil {
 		return
 	}
@@ -94,7 +95,7 @@ func (bq *BookQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (bq *BookQuery) FirstIDX(ctx context.Context) int {
+func (bq *BookQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := bq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -132,8 +133,8 @@ func (bq *BookQuery) OnlyX(ctx context.Context) *Book {
 // OnlyID is like Only, but returns the only Book ID in the query.
 // Returns a *NotSingularError when more than one Book ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (bq *BookQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (bq *BookQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = bq.Limit(2).IDs(setContextOp(ctx, bq.ctx, "OnlyID")); err != nil {
 		return
 	}
@@ -149,7 +150,7 @@ func (bq *BookQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (bq *BookQuery) OnlyIDX(ctx context.Context) int {
+func (bq *BookQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := bq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -177,7 +178,7 @@ func (bq *BookQuery) AllX(ctx context.Context) []*Book {
 }
 
 // IDs executes the query and returns a list of Book IDs.
-func (bq *BookQuery) IDs(ctx context.Context) (ids []int, err error) {
+func (bq *BookQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if bq.ctx.Unique == nil && bq.path != nil {
 		bq.Unique(true)
 	}
@@ -189,7 +190,7 @@ func (bq *BookQuery) IDs(ctx context.Context) (ids []int, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (bq *BookQuery) IDsX(ctx context.Context) []int {
+func (bq *BookQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := bq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -261,12 +262,12 @@ func (bq *BookQuery) Clone() *BookQuery {
 // Example:
 //
 //	var v []struct {
-//		Title string `json:"title,omitempty"`
+//		CreatedAt time.Time `json:"created_at,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Book.Query().
-//		GroupBy(book.FieldTitle).
+//		GroupBy(book.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (bq *BookQuery) GroupBy(field string, fields ...string) *BookGroupBy {
@@ -284,11 +285,11 @@ func (bq *BookQuery) GroupBy(field string, fields ...string) *BookGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Title string `json:"title,omitempty"`
+//		CreatedAt time.Time `json:"created_at,omitempty"`
 //	}
 //
 //	client.Book.Query().
-//		Select(book.FieldTitle).
+//		Select(book.FieldCreatedAt).
 //		Scan(ctx, &v)
 func (bq *BookQuery) Select(fields ...string) *BookSelect {
 	bq.ctx.Fields = append(bq.ctx.Fields, fields...)
@@ -364,7 +365,7 @@ func (bq *BookQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (bq *BookQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(book.Table, book.Columns, sqlgraph.NewFieldSpec(book.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(book.Table, book.Columns, sqlgraph.NewFieldSpec(book.FieldID, field.TypeUUID))
 	_spec.From = bq.sql
 	if unique := bq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

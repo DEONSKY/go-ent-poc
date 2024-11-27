@@ -8,6 +8,7 @@ import (
 	"ent-mysql/ent/predicate"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -24,6 +25,32 @@ type BookUpdate struct {
 // Where appends a list predicates to the BookUpdate builder.
 func (bu *BookUpdate) Where(ps ...predicate.Book) *BookUpdate {
 	bu.mutation.Where(ps...)
+	return bu
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (bu *BookUpdate) SetUpdatedAt(t time.Time) *BookUpdate {
+	bu.mutation.SetUpdatedAt(t)
+	return bu
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (bu *BookUpdate) SetDeleteTime(t time.Time) *BookUpdate {
+	bu.mutation.SetDeleteTime(t)
+	return bu
+}
+
+// SetNillableDeleteTime sets the "delete_time" field if the given value is not nil.
+func (bu *BookUpdate) SetNillableDeleteTime(t *time.Time) *BookUpdate {
+	if t != nil {
+		bu.SetDeleteTime(*t)
+	}
+	return bu
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (bu *BookUpdate) ClearDeleteTime() *BookUpdate {
+	bu.mutation.ClearDeleteTime()
 	return bu
 }
 
@@ -46,6 +73,9 @@ func (bu *BookUpdate) Mutation() *BookMutation {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (bu *BookUpdate) Save(ctx context.Context) (int, error) {
+	if err := bu.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, bu.sqlSave, bu.mutation, bu.hooks)
 }
 
@@ -71,6 +101,18 @@ func (bu *BookUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (bu *BookUpdate) defaults() error {
+	if _, ok := bu.mutation.UpdatedAt(); !ok {
+		if book.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized book.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
+		v := book.UpdateDefaultUpdatedAt()
+		bu.mutation.SetUpdatedAt(v)
+	}
+	return nil
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (bu *BookUpdate) check() error {
 	if v, ok := bu.mutation.Title(); ok {
@@ -90,13 +132,22 @@ func (bu *BookUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if err := bu.check(); err != nil {
 		return n, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(book.Table, book.Columns, sqlgraph.NewFieldSpec(book.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(book.Table, book.Columns, sqlgraph.NewFieldSpec(book.FieldID, field.TypeUUID))
 	if ps := bu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := bu.mutation.UpdatedAt(); ok {
+		_spec.SetField(book.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := bu.mutation.DeleteTime(); ok {
+		_spec.SetField(book.FieldDeleteTime, field.TypeTime, value)
+	}
+	if bu.mutation.DeleteTimeCleared() {
+		_spec.ClearField(book.FieldDeleteTime, field.TypeTime)
 	}
 	if value, ok := bu.mutation.Title(); ok {
 		_spec.SetField(book.FieldTitle, field.TypeString, value)
@@ -122,6 +173,32 @@ type BookUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *BookMutation
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (buo *BookUpdateOne) SetUpdatedAt(t time.Time) *BookUpdateOne {
+	buo.mutation.SetUpdatedAt(t)
+	return buo
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (buo *BookUpdateOne) SetDeleteTime(t time.Time) *BookUpdateOne {
+	buo.mutation.SetDeleteTime(t)
+	return buo
+}
+
+// SetNillableDeleteTime sets the "delete_time" field if the given value is not nil.
+func (buo *BookUpdateOne) SetNillableDeleteTime(t *time.Time) *BookUpdateOne {
+	if t != nil {
+		buo.SetDeleteTime(*t)
+	}
+	return buo
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (buo *BookUpdateOne) ClearDeleteTime() *BookUpdateOne {
+	buo.mutation.ClearDeleteTime()
+	return buo
 }
 
 // SetTitle sets the "title" field.
@@ -156,6 +233,9 @@ func (buo *BookUpdateOne) Select(field string, fields ...string) *BookUpdateOne 
 
 // Save executes the query and returns the updated Book entity.
 func (buo *BookUpdateOne) Save(ctx context.Context) (*Book, error) {
+	if err := buo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, buo.sqlSave, buo.mutation, buo.hooks)
 }
 
@@ -181,6 +261,18 @@ func (buo *BookUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (buo *BookUpdateOne) defaults() error {
+	if _, ok := buo.mutation.UpdatedAt(); !ok {
+		if book.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized book.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
+		v := book.UpdateDefaultUpdatedAt()
+		buo.mutation.SetUpdatedAt(v)
+	}
+	return nil
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (buo *BookUpdateOne) check() error {
 	if v, ok := buo.mutation.Title(); ok {
@@ -200,7 +292,7 @@ func (buo *BookUpdateOne) sqlSave(ctx context.Context) (_node *Book, err error) 
 	if err := buo.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(book.Table, book.Columns, sqlgraph.NewFieldSpec(book.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(book.Table, book.Columns, sqlgraph.NewFieldSpec(book.FieldID, field.TypeUUID))
 	id, ok := buo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Book.id" for update`)}
@@ -224,6 +316,15 @@ func (buo *BookUpdateOne) sqlSave(ctx context.Context) (_node *Book, err error) 
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := buo.mutation.UpdatedAt(); ok {
+		_spec.SetField(book.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := buo.mutation.DeleteTime(); ok {
+		_spec.SetField(book.FieldDeleteTime, field.TypeTime, value)
+	}
+	if buo.mutation.DeleteTimeCleared() {
+		_spec.ClearField(book.FieldDeleteTime, field.TypeTime)
 	}
 	if value, ok := buo.mutation.Title(); ok {
 		_spec.SetField(book.FieldTitle, field.TypeString, value)

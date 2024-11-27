@@ -34,6 +34,26 @@ func (cu *CardUpdate) SetUpdatedAt(t time.Time) *CardUpdate {
 	return cu
 }
 
+// SetDeleteTime sets the "delete_time" field.
+func (cu *CardUpdate) SetDeleteTime(t time.Time) *CardUpdate {
+	cu.mutation.SetDeleteTime(t)
+	return cu
+}
+
+// SetNillableDeleteTime sets the "delete_time" field if the given value is not nil.
+func (cu *CardUpdate) SetNillableDeleteTime(t *time.Time) *CardUpdate {
+	if t != nil {
+		cu.SetDeleteTime(*t)
+	}
+	return cu
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (cu *CardUpdate) ClearDeleteTime() *CardUpdate {
+	cu.mutation.ClearDeleteTime()
+	return cu
+}
+
 // SetCardNo sets the "card_no" field.
 func (cu *CardUpdate) SetCardNo(s string) *CardUpdate {
 	cu.mutation.SetCardNo(s)
@@ -47,7 +67,9 @@ func (cu *CardUpdate) Mutation() *CardMutation {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (cu *CardUpdate) Save(ctx context.Context) (int, error) {
-	cu.defaults()
+	if err := cu.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, cu.sqlSave, cu.mutation, cu.hooks)
 }
 
@@ -74,15 +96,19 @@ func (cu *CardUpdate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (cu *CardUpdate) defaults() {
+func (cu *CardUpdate) defaults() error {
 	if _, ok := cu.mutation.UpdatedAt(); !ok {
+		if card.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized card.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
 		v := card.UpdateDefaultUpdatedAt()
 		cu.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 func (cu *CardUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := sqlgraph.NewUpdateSpec(card.Table, card.Columns, sqlgraph.NewFieldSpec(card.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(card.Table, card.Columns, sqlgraph.NewFieldSpec(card.FieldID, field.TypeUUID))
 	if ps := cu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -92,6 +118,12 @@ func (cu *CardUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := cu.mutation.UpdatedAt(); ok {
 		_spec.SetField(card.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := cu.mutation.DeleteTime(); ok {
+		_spec.SetField(card.FieldDeleteTime, field.TypeTime, value)
+	}
+	if cu.mutation.DeleteTimeCleared() {
+		_spec.ClearField(card.FieldDeleteTime, field.TypeTime)
 	}
 	if value, ok := cu.mutation.CardNo(); ok {
 		_spec.SetField(card.FieldCardNo, field.TypeString, value)
@@ -122,6 +154,26 @@ func (cuo *CardUpdateOne) SetUpdatedAt(t time.Time) *CardUpdateOne {
 	return cuo
 }
 
+// SetDeleteTime sets the "delete_time" field.
+func (cuo *CardUpdateOne) SetDeleteTime(t time.Time) *CardUpdateOne {
+	cuo.mutation.SetDeleteTime(t)
+	return cuo
+}
+
+// SetNillableDeleteTime sets the "delete_time" field if the given value is not nil.
+func (cuo *CardUpdateOne) SetNillableDeleteTime(t *time.Time) *CardUpdateOne {
+	if t != nil {
+		cuo.SetDeleteTime(*t)
+	}
+	return cuo
+}
+
+// ClearDeleteTime clears the value of the "delete_time" field.
+func (cuo *CardUpdateOne) ClearDeleteTime() *CardUpdateOne {
+	cuo.mutation.ClearDeleteTime()
+	return cuo
+}
+
 // SetCardNo sets the "card_no" field.
 func (cuo *CardUpdateOne) SetCardNo(s string) *CardUpdateOne {
 	cuo.mutation.SetCardNo(s)
@@ -148,7 +200,9 @@ func (cuo *CardUpdateOne) Select(field string, fields ...string) *CardUpdateOne 
 
 // Save executes the query and returns the updated Card entity.
 func (cuo *CardUpdateOne) Save(ctx context.Context) (*Card, error) {
-	cuo.defaults()
+	if err := cuo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, cuo.sqlSave, cuo.mutation, cuo.hooks)
 }
 
@@ -175,15 +229,19 @@ func (cuo *CardUpdateOne) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (cuo *CardUpdateOne) defaults() {
+func (cuo *CardUpdateOne) defaults() error {
 	if _, ok := cuo.mutation.UpdatedAt(); !ok {
+		if card.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized card.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
 		v := card.UpdateDefaultUpdatedAt()
 		cuo.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 func (cuo *CardUpdateOne) sqlSave(ctx context.Context) (_node *Card, err error) {
-	_spec := sqlgraph.NewUpdateSpec(card.Table, card.Columns, sqlgraph.NewFieldSpec(card.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(card.Table, card.Columns, sqlgraph.NewFieldSpec(card.FieldID, field.TypeUUID))
 	id, ok := cuo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Card.id" for update`)}
@@ -210,6 +268,12 @@ func (cuo *CardUpdateOne) sqlSave(ctx context.Context) (_node *Card, err error) 
 	}
 	if value, ok := cuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(card.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := cuo.mutation.DeleteTime(); ok {
+		_spec.SetField(card.FieldDeleteTime, field.TypeTime, value)
+	}
+	if cuo.mutation.DeleteTimeCleared() {
+		_spec.ClearField(card.FieldDeleteTime, field.TypeTime)
 	}
 	if value, ok := cuo.mutation.CardNo(); ok {
 		_spec.SetField(card.FieldCardNo, field.TypeString, value)

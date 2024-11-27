@@ -5,13 +5,15 @@ import (
 	"log"
 
 	"ent-mysql/database"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 var ctx = context.Background()
 
 func GetBook(c *fiber.Ctx) error {
-	id, _ := c.ParamsInt("id")
+	id, _ := uuid.Parse(c.Params("id"))
 	b, err := database.DBConn.Book.
 		Get(ctx, id)
 	if b == nil {
@@ -53,7 +55,7 @@ func CreateBook(c *fiber.Ctx) error {
 }
 
 func DeleteBook(c *fiber.Ctx) error {
-	id, _ := c.ParamsInt("id")
+	id, _ := uuid.Parse(c.Params("id"))
 	err := database.DBConn.Book.
 		DeleteOneID(id).
 		Exec(ctx)
@@ -67,7 +69,7 @@ func DeleteBook(c *fiber.Ctx) error {
 func UpdateBook(c *fiber.Ctx) error {
 	title := c.Query("title")
 	author := c.Query("author")
-	id, _ := c.ParamsInt("id")
+	id, _ := uuid.Parse(c.Params("id"))
 	if title == "" || author == "" {
 		return c.Status(fiber.StatusBadRequest).JSON("Not enough data for updating")
 	}

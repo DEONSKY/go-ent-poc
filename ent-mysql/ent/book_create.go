@@ -7,9 +7,11 @@ import (
 	"ent-mysql/ent/book"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // BookCreate is the builder for creating a Book entity.
@@ -17,6 +19,48 @@ type BookCreate struct {
 	config
 	mutation *BookMutation
 	hooks    []Hook
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (bc *BookCreate) SetCreatedAt(t time.Time) *BookCreate {
+	bc.mutation.SetCreatedAt(t)
+	return bc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (bc *BookCreate) SetNillableCreatedAt(t *time.Time) *BookCreate {
+	if t != nil {
+		bc.SetCreatedAt(*t)
+	}
+	return bc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (bc *BookCreate) SetUpdatedAt(t time.Time) *BookCreate {
+	bc.mutation.SetUpdatedAt(t)
+	return bc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (bc *BookCreate) SetNillableUpdatedAt(t *time.Time) *BookCreate {
+	if t != nil {
+		bc.SetUpdatedAt(*t)
+	}
+	return bc
+}
+
+// SetDeleteTime sets the "delete_time" field.
+func (bc *BookCreate) SetDeleteTime(t time.Time) *BookCreate {
+	bc.mutation.SetDeleteTime(t)
+	return bc
+}
+
+// SetNillableDeleteTime sets the "delete_time" field if the given value is not nil.
+func (bc *BookCreate) SetNillableDeleteTime(t *time.Time) *BookCreate {
+	if t != nil {
+		bc.SetDeleteTime(*t)
+	}
+	return bc
 }
 
 // SetTitle sets the "title" field.
@@ -31,6 +75,20 @@ func (bc *BookCreate) SetAuthor(s string) *BookCreate {
 	return bc
 }
 
+// SetID sets the "id" field.
+func (bc *BookCreate) SetID(u uuid.UUID) *BookCreate {
+	bc.mutation.SetID(u)
+	return bc
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (bc *BookCreate) SetNillableID(u *uuid.UUID) *BookCreate {
+	if u != nil {
+		bc.SetID(*u)
+	}
+	return bc
+}
+
 // Mutation returns the BookMutation object of the builder.
 func (bc *BookCreate) Mutation() *BookMutation {
 	return bc.mutation
@@ -38,6 +96,9 @@ func (bc *BookCreate) Mutation() *BookMutation {
 
 // Save creates the Book in the database.
 func (bc *BookCreate) Save(ctx context.Context) (*Book, error) {
+	if err := bc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, bc.sqlSave, bc.mutation, bc.hooks)
 }
 
@@ -63,8 +124,40 @@ func (bc *BookCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (bc *BookCreate) defaults() error {
+	if _, ok := bc.mutation.CreatedAt(); !ok {
+		if book.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized book.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
+		v := book.DefaultCreatedAt()
+		bc.mutation.SetCreatedAt(v)
+	}
+	if _, ok := bc.mutation.UpdatedAt(); !ok {
+		if book.DefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized book.DefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
+		v := book.DefaultUpdatedAt()
+		bc.mutation.SetUpdatedAt(v)
+	}
+	if _, ok := bc.mutation.ID(); !ok {
+		if book.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized book.DefaultID (forgotten import ent/runtime?)")
+		}
+		v := book.DefaultID()
+		bc.mutation.SetID(v)
+	}
+	return nil
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (bc *BookCreate) check() error {
+	if _, ok := bc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Book.created_at"`)}
+	}
+	if _, ok := bc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Book.updated_at"`)}
+	}
 	if _, ok := bc.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Book.title"`)}
 	}
@@ -95,8 +188,13 @@ func (bc *BookCreate) sqlSave(ctx context.Context) (*Book, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	bc.mutation.id = &_node.ID
 	bc.mutation.done = true
 	return _node, nil
@@ -105,8 +203,24 @@ func (bc *BookCreate) sqlSave(ctx context.Context) (*Book, error) {
 func (bc *BookCreate) createSpec() (*Book, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Book{config: bc.config}
-		_spec = sqlgraph.NewCreateSpec(book.Table, sqlgraph.NewFieldSpec(book.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(book.Table, sqlgraph.NewFieldSpec(book.FieldID, field.TypeUUID))
 	)
+	if id, ok := bc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
+	}
+	if value, ok := bc.mutation.CreatedAt(); ok {
+		_spec.SetField(book.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := bc.mutation.UpdatedAt(); ok {
+		_spec.SetField(book.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
+	if value, ok := bc.mutation.DeleteTime(); ok {
+		_spec.SetField(book.FieldDeleteTime, field.TypeTime, value)
+		_node.DeleteTime = value
+	}
 	if value, ok := bc.mutation.Title(); ok {
 		_spec.SetField(book.FieldTitle, field.TypeString, value)
 		_node.Title = value
@@ -132,6 +246,7 @@ func (bcb *BookCreateBulk) Save(ctx context.Context) ([]*Book, error) {
 	for i := range bcb.builders {
 		func(i int, root context.Context) {
 			builder := bcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*BookMutation)
 				if !ok {
@@ -158,10 +273,6 @@ func (bcb *BookCreateBulk) Save(ctx context.Context) ([]*Book, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})
