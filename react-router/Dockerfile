@@ -1,5 +1,5 @@
 # First stage: Get Golang image from DockerHub.
-FROM golang:1.23.3@sha256:73f06be4578c9987ce560087e2e2ea6485fb605e3910542cadd8fa09fc5f3e31 AS backend-builder
+FROM golang:1.24.0@sha256:2b1cbf278ce05a2a310a3d695ebb176420117a8cfcfcc4e5e68a1bef5f6354da AS backend-builder
 
 # Label this container.
 LABEL appname="React App Fiber"
